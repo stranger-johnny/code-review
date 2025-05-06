@@ -19,6 +19,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const repo = context.repo.repo;
             const shouldRun = repo !== 'main';
             
             console.log(`Repository name is ${repo}, should run is ${shouldRun}`);
@@ -34,5 +35,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '👋 Thanks for reporting'
+              body: '👋 Thanks for reporting!'
             })
