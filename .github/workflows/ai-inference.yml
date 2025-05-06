@@ -26,8 +26,6 @@ jobs:
             return { shouldRun: shouldRun }
           result-encoding: string
 
-        steps:
-
       - uses: actions/github-script@v7
         if: ${{ fromJson(steps.get-repository-name.outputs.result).shouldRun }}
         with:
