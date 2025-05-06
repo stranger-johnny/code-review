@@ -24,11 +24,10 @@ jobs:
             
             console.log(`Repository name is ${repo}, should run is ${shouldRun}`);
             
-            return { shouldRun: shouldRun }
-          result-encoding: string
+            core.setOutput('shouldRun', shouldRun.toString());
 
       - uses: actions/github-script@v7
-        if: ${{ fromJson(steps.get-repository-name.outputs.result).shouldRun }}
+        if: ${{ steps.get-repository-name.outputs.shouldRun == 'true' }}
         with:
           script: |
             github.rest.issues.createComment({
