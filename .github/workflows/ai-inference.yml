@@ -10,6 +10,8 @@ jobs:
   introduce-command:
     if: ${{ github.event.pull_request && github.event.action == 'opened' }}
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Check for Command
         id: check-command
@@ -17,12 +19,19 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const { data: pullRequest } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: "`/review` コマンドでレビューを開始できます。"
-            })
+              pull_number: context.payload.issue.number,
+            });
+            if (pullRequest.base.ref === 'main') {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: "`/review` コマンドでレビューを開始できます。"
+              })
+            }
 
   ai-review:
     if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/review') }}
@@ -58,5 +67,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '👋 Thanks for reporting!'
+              body: '👋 Thanks for reporting'
             })
