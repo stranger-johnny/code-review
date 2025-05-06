@@ -8,9 +8,6 @@ jobs:
   ai-review:
     if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/review') }}
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
 
     steps:
       - name: Get Repository Name
