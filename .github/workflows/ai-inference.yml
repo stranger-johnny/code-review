@@ -9,8 +9,8 @@ jobs:
     if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/review') }}
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-
+      pull-requests: write
+      
     steps:
       - name: Get Repository Name
         id: get-repository-name
@@ -33,5 +33,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '👋 Thanks for reporting'
+              body: '👋 Thanks for reporting!'
             })
