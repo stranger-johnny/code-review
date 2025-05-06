@@ -6,7 +6,6 @@ on:
 
 jobs:
   ai-review:
-    # この条件は、PRへのコメントで、かつコメント内容が「/review」の場合のみジョブを実行します
     if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/review') }}
     runs-on: ubuntu-latest
     permissions:
