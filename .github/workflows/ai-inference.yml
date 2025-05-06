@@ -19,6 +19,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const repo = context.repo.repo;
             const shouldRun = repo !== 'main';
             
             console.log(`Repository name is ${repo}, should run is ${shouldRun}`);
