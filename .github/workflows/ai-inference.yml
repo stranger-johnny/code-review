@@ -1,0 +1,77 @@
+name: AI Code Review
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  ai-review:
+    # この条件は、PRへのコメントで、かつコメント内容が「/review」の場合のみジョブを実行します
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/review') }}
+    runs-on: ubuntu-latest
+    permissions:
+      # PRへのコメント投稿に必要な権限
+      pull-requests: write
+      # コードにアクセスするための権限
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # PRの情報を取得
+      - name: Get PR details
+        id: pr-data
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.issue.number;
+            const { data: pullRequest } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            return {
+              number: prNumber,
+              base: pullRequest.base.sha,
+              head: pullRequest.head.sha
+            };
+          result-encoding: string
+
+      # AI推論を実行
+      - name: AI Code Review
+        uses: actions/ai-inference@v1
+        with:
+          model: gha-openai/gpt-4
+          inputs: |
+            PR #${{ fromJson(steps.pr-data.outputs.result).number }} の変更内容をレビューしてください。
+            以下の観点からコードをレビューし、改善点があれば提案してください：
+            
+            - コードの品質とベストプラクティス
+            - セキュリティの問題
+            - パフォーマンスの改善点
+            - バグの可能性
+            - テストの充実度
+            
+            変更されたファイルのみをレビューの対象としてください。
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # レビュー結果をPRにコメント
+      - name: Post Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.issue.number;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `## AI Code Review Results\n\n${process.env.AI_INFERENCE_RESULT}`
+            });
+        env:
+          AI_INFERENCE_RESULT: ${{ steps.ai-inference.outputs.result }}
